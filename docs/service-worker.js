@@ -1,4 +1,4 @@
-const BUILD = "v1";
+const BUILD = "v2";
 const APP_CACHE = `lew-app-${BUILD}`;
 const DATA_CACHE = `lew-data-${BUILD}`;
 const AUDIO_CACHE = `lew-audio-${BUILD}`;
@@ -6,6 +6,7 @@ const AUDIO_CACHE = `lew-audio-${BUILD}`;
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./404.html",
   "./manifest.json",
   "./styles/reset.css",
   "./styles/tokens.css",
@@ -157,13 +158,19 @@ async function audioStrategy(req) {
 }
 
 async function navigationStrategy(req) {
+  const cache = await caches.open(APP_CACHE);
   try {
     const res = await fetch(req);
-    const cache = await caches.open(APP_CACHE);
-    cache.put(req, res.clone());
+    if (res.ok) {
+      try { await cache.put(req, res.clone()); } catch (e) {}
+      return res;
+    }
+    if (res.status === 404 || res.status === 0) {
+      const cached = await cache.match("./index.html");
+      if (cached) return cached;
+    }
     return res;
   } catch (e) {
-    const cache = await caches.open(APP_CACHE);
     const cached = await cache.match("./index.html");
     if (cached) return cached;
     return new Response("Offline", { status: 503 });

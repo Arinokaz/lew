@@ -25,6 +25,22 @@
     <link rel="stylesheet" href="./styles/base.css" />
     <link rel="stylesheet" href="./styles/components.css" />
 
+    <script>
+      (function () {
+        try {
+          var p = new URLSearchParams(location.search).get("p");
+          if (!p) return;
+          var decoded = decodeURIComponent(p);
+          if (!decoded || decoded === location.pathname) return;
+          var params = new URLSearchParams(location.search);
+          params.delete("p");
+          var qs = params.toString();
+          var clean = decoded + (qs ? "?" + qs : "") + location.hash;
+          history.replaceState(null, "", clean);
+        } catch (e) {}
+      })();
+    </script>
+
     <title>LEW — Learn English Words</title>
 
     <link rel="modulepreload" href="./src/pages/dashboard.js" />

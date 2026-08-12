@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>LEW</title>
+<script>
+  (function () {
+    try {
+      var path = location.pathname + location.search + location.hash;
+      var base = new URL("./", location.href).pathname;
+      var target = base + "?p=" + encodeURIComponent(path);
+      location.replace(target);
+    } catch (e) {
+      location.replace("./");
+    }
+  })();
+</script>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; padding: 2rem; text-align: center; color: #4f46e5; }
+</style>
+</head>
+<body>
+<p>Loading LEW…</p>
+</body>
+</html>
