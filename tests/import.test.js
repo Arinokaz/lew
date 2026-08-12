@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { mapWord, mapAll } from "../public/src/services/import.js";
+import { mapWord, mapAll } from "../docs/src/services/import.js";
 
 describe("mapWord — basic shape", () => {
   test("maps a well-formed raw entry", () => {

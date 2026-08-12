@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VENDOR_DIR="$(cd "$(dirname "$0")/../public/src/vendor" && pwd)"
+VENDOR_DIR="$(cd "$(dirname "$0")/../docs/src/vendor" && pwd)"
 DEXIE_VERSION="${DEXIE_VERSION:-4.0.10}"
 TARGET_MJS="$VENDOR_DIR/dexie.min.mjs"
 

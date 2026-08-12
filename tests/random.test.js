@@ -7,7 +7,7 @@ import {
   shuffleInPlace,
   makeSeededRng,
   levenshtein,
-} from "../public/src/services/random.js";
+} from "../docs/src/services/random.js";
 
 describe("pickRandom", () => {
   test("returns undefined for empty array", () => {

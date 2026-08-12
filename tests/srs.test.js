@@ -23,8 +23,8 @@ import {
   MIN_EF,
   MAX_INTERVAL,
   DAY_MS,
-} from "../public/src/services/srs.js";
-import db from "../public/src/services/db.js";
+} from "../docs/src/services/srs.js";
+import db from "../docs/src/services/db.js";
 
 const fresh = () => createProgress(1);
 
@@ -476,7 +476,7 @@ describe("recordQuizResult — cap-reached and stage-up edge cases", () => {
   });
 
   test("isNewWord predicate matches reset-to-new state", async () => {
-    const { isNewWord } = await import("../public/src/services/srs.js");
+    const { isNewWord } = await import("../docs/src/services/srs.js");
     assert.ok(isNewWord(null));
     assert.ok(isNewWord({}));
     assert.ok(!isNewWord({ points: 1 }));
@@ -513,7 +513,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
     for (let i = 6000; i <= 7403; i++) words.push(makeWord(i, "C1"));
     await db.words.bulkPut(words);
 
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool(["A1", "A2", "B1", "B2", "C1"], 15);
     assert.equal(pool.length, 15);
     for (const w of pool) {
@@ -527,7 +527,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
     for (let i = 100; i <= 130; i++) words.push(makeWord(i, "C1"));
     await db.words.bulkPut(words);
 
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool(["A1", "A2", "B1", "B2", "C1"], 20);
     assert.equal(pool.length, 20);
     for (const w of pool) {
@@ -550,7 +550,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
       }))
     );
 
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool(["A1", "A2", "B1", "B2", "C1"], 10);
     assert.equal(pool.length, 10);
     for (const w of pool) {
@@ -564,7 +564,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
     for (let i = 100; i <= 130; i++) words.push(makeWord(i, "B1"));
     await db.words.bulkPut(words);
 
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool(["B1"], 10);
     assert.equal(pool.length, 10);
     for (const w of pool) {
@@ -573,7 +573,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
   });
 
   test("empty pool when activeLevels is empty", async () => {
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool([], 15);
     assert.equal(pool.length, 0);
   });
@@ -591,7 +591,7 @@ describe("getNewWordPool — strict CEFR ordering", () => {
       { wordId: 3, points: 5, lastTouchedDate: today, accumulatedToday: 0 },
     ]);
 
-    const { getNewWordPool } = await import("../public/src/services/srs.js");
+    const { getNewWordPool } = await import("../docs/src/services/srs.js");
     const pool = await getNewWordPool(["A1", "A2", "B1", "B2", "C1"], 15);
     assert.equal(pool.length, 15);
     const ids = pool.map((w) => w.id).sort((a, b) => a - b);
@@ -623,7 +623,7 @@ describe("getDebtByLevel", () => {
 
   test("zero debt when no progress", async () => {
     await db.words.bulkPut([makeWord(1, "A1"), makeWord(2, "B1")]);
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1", "A2", "B1", "B2", "C1"]);
     assert.equal(debt.total, 0);
     assert.equal(debt.byLevel.A1, 0);
@@ -638,7 +638,7 @@ describe("getDebtByLevel", () => {
       { wordId: 2, points: 60, nextReview: past, lastTouchedDate: "2024-01-01", accumulatedToday: 0 },
       { wordId: 3, points: 80, nextReview: past, lastTouchedDate: "2024-01-01", accumulatedToday: 0 },
     ]);
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1", "A2", "B1", "B2", "C1"]);
     assert.equal(debt.total, 3);
     assert.equal(debt.byLevel.A1, 2);
@@ -648,7 +648,7 @@ describe("getDebtByLevel", () => {
   test("ignores words with points = 0 (never learned)", async () => {
     await db.words.bulkPut([makeWord(1, "A1")]);
     await db.progress.put({ wordId: 1, points: 0, nextReview: 0, lastTouchedDate: null, accumulatedToday: 0 });
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1"]);
     assert.equal(debt.total, 0);
   });
@@ -656,7 +656,7 @@ describe("getDebtByLevel", () => {
   test("ignores mastered words (points >= 100)", async () => {
     await db.words.bulkPut([makeWord(1, "A1")]);
     await db.progress.put({ wordId: 1, points: 100, nextReview: 0, lastTouchedDate: "2024-01-01", accumulatedToday: 0 });
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1"]);
     assert.equal(debt.total, 0);
   });
@@ -665,7 +665,7 @@ describe("getDebtByLevel", () => {
     await db.words.bulkPut([makeWord(1, "A1")]);
     const future = Date.now() + 86400000;
     await db.progress.put({ wordId: 1, points: 40, nextReview: future, lastTouchedDate: "2024-01-01", accumulatedToday: 0 });
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1"]);
     assert.equal(debt.total, 0);
   });
@@ -677,7 +677,7 @@ describe("getDebtByLevel", () => {
       { wordId: 1, points: 20, nextReview: past, lastTouchedDate: "2024-01-01", accumulatedToday: 0 },
       { wordId: 2, points: 20, nextReview: past, lastTouchedDate: "2024-01-01", accumulatedToday: 0 },
     ]);
-    const { getDebtByLevel } = await import("../public/src/services/srs.js");
+    const { getDebtByLevel } = await import("../docs/src/services/srs.js");
     const debt = await getDebtByLevel(["A1"]);
     assert.equal(debt.total, 1);
     assert.equal(debt.byLevel.A1, 1);
@@ -711,7 +711,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
     for (let i = 100; i <= 130; i++) words.push(makeWord(i, "C1"));
     await db.words.bulkPut(words);
 
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const pool = await getDailyLearnPool(["A1", "A2", "B1", "B2", "C1"], 15);
     assert.equal(pool.length, 15);
     for (const w of pool) assert.equal(w.level, "A1");
@@ -722,7 +722,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
     for (let i = 1; i <= 60; i++) words.push(makeWord(i, "A1"));
     await db.words.bulkPut(words);
 
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const first = await getDailyLearnPool(["A1"], 15);
     const firstIds = first.map((w) => w.id).sort((a, b) => a - b);
 
@@ -736,7 +736,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
     for (let i = 1; i <= 20; i++) words.push(makeWord(i, "A1"));
     await db.words.bulkPut(words);
 
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const first = await getDailyLearnPool(["A1"], 10);
     const firstIds = first.map((w) => w.id);
 
@@ -759,7 +759,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
   });
 
   test("returns empty pool when activeLevels yields no candidates", async () => {
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const pool = await getDailyLearnPool(["A1"], 15);
     assert.equal(pool.length, 0);
   });
@@ -769,7 +769,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
     for (let i = 1; i <= 30; i++) words.push(makeWord(i, "A1"));
     await db.words.bulkPut(words);
 
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const first = await getDailyLearnPool(["A1"], 15);
     assert.equal(first.length, 15);
 
@@ -791,7 +791,7 @@ describe("getDailyLearnPool — fixed-for-day snapshot", () => {
     const today = new Date().toISOString().slice(0, 10);
     localStorage.setItem(`lew.learnDailyPool.${today}`, JSON.stringify([1, 2, 3, 4, 5]));
 
-    const { getDailyLearnPool } = await import("../public/src/services/srs.js");
+    const { getDailyLearnPool } = await import("../docs/src/services/srs.js");
     const pool = await getDailyLearnPool(["A1"], 15);
     assert.equal(pool.length, 15, "legacy format must be replaced with new quota-sized snapshot");
   });
@@ -801,18 +801,18 @@ describe("getCurrentLevel", () => {
   const LEVEL_TOTALS = { A1: 1076, A2: 992, B1: 903, B2: 1573, C1: 1404 };
 
   test("returns null when no active levels", async () => {
-    const { getCurrentLevel } = await import("../public/src/services/srs.js");
+    const { getCurrentLevel } = await import("../docs/src/services/srs.js");
     assert.equal(getCurrentLevel([], {}), null);
   });
 
   test("returns the lowest active level when none are mastered", async () => {
-    const { getCurrentLevel } = await import("../public/src/services/srs.js");
+    const { getCurrentLevel } = await import("../docs/src/services/srs.js");
     assert.equal(getCurrentLevel(["A1", "A2"], {}), "A1");
     assert.equal(getCurrentLevel(["B1", "B2"], {}), "B1");
   });
 
   test("skips fully mastered levels to find next one", async () => {
-    const { getCurrentLevel } = await import("../public/src/services/srs.js");
+    const { getCurrentLevel } = await import("../docs/src/services/srs.js");
     assert.equal(getCurrentLevel(["A1", "A2", "B1"], { A1: LEVEL_TOTALS.A1 }), "A2");
     assert.equal(
       getCurrentLevel(["A1", "A2", "B1"], { A1: LEVEL_TOTALS.A1, A2: LEVEL_TOTALS.A2 }),
@@ -821,7 +821,7 @@ describe("getCurrentLevel", () => {
   });
 
   test("returns last active level when all are mastered", async () => {
-    const { getCurrentLevel } = await import("../public/src/services/srs.js");
+    const { getCurrentLevel } = await import("../docs/src/services/srs.js");
     const allMastered = {
       A1: LEVEL_TOTALS.A1,
       A2: LEVEL_TOTALS.A2,

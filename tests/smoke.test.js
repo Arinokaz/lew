@@ -27,19 +27,19 @@ describe("smoke test — components and pages", () => {
   });
 
   test("all components register custom elements", async () => {
-    await import("../public/src/components/toast.js");
-    await import("../public/src/components/word-card.js");
-    await import("../public/src/components/audio-player.js");
-    await import("../public/src/components/quiz-choice.js");
-    await import("../public/src/components/quiz-letters.js");
-    await import("../public/src/components/quiz-input.js");
-    await import("../public/src/components/quiz-cloze.js");
-    await import("../public/src/components/progress-bar.js");
-    await import("../public/src/components/streak-badge.js");
-    await import("../public/src/components/stat-tile.js");
-    await import("../public/src/components/toggle.js");
-    await import("../public/src/components/slider.js");
-    await import("../public/src/components/level-meter.js");
+    await import("../docs/src/components/toast.js");
+    await import("../docs/src/components/word-card.js");
+    await import("../docs/src/components/audio-player.js");
+    await import("../docs/src/components/quiz-choice.js");
+    await import("../docs/src/components/quiz-letters.js");
+    await import("../docs/src/components/quiz-input.js");
+    await import("../docs/src/components/quiz-cloze.js");
+    await import("../docs/src/components/progress-bar.js");
+    await import("../docs/src/components/streak-badge.js");
+    await import("../docs/src/components/stat-tile.js");
+    await import("../docs/src/components/toggle.js");
+    await import("../docs/src/components/slider.js");
+    await import("../docs/src/components/level-meter.js");
 
     const expected = [
       "toast-stack",
@@ -97,13 +97,13 @@ describe("smoke test — components and pages", () => {
   });
 
   test("router module loads", async () => {
-    const r = await import("../public/src/router.js");
+    const r = await import("../docs/src/router.js");
     assert.equal(typeof r.go, "function");
     assert.equal(typeof r.currentPath, "function");
   });
 
   test("settings module initializes with defaults", async () => {
-    const s = await import("../public/src/services/settings.js");
+    const s = await import("../docs/src/services/settings.js");
     assert.equal(s.get("theme"), "auto");
     assert.equal(s.get("dailyNorm"), 15);
     assert.equal(s.get("repeatSessionSize"), 15);
@@ -111,7 +111,7 @@ describe("smoke test — components and pages", () => {
   });
 
   test("i18n module provides translations for all 3 langs", async () => {
-    const i = await import("../public/src/services/i18n.js");
+    const i = await import("../docs/src/services/i18n.js");
     i.setLang("ru");
     assert.equal(i.t("nav.home"), "Главная");
     i.setLang("ua");
@@ -121,7 +121,7 @@ describe("smoke test — components and pages", () => {
   });
 
   test("nav keys exist for all 7 routes across 3 langs", async () => {
-    const i = await import("../public/src/services/i18n.js");
+    const i = await import("../docs/src/services/i18n.js");
     const keys = ["home", "learn", "repeat", "quiz", "stats", "dictionary", "settings"];
     for (const lang of ["ru", "ua", "en"]) {
       i.setLang(lang);
@@ -133,7 +133,7 @@ describe("smoke test — components and pages", () => {
   });
 
   test("setQuizActive toggles body dataset (only in browser)", async () => {
-    const qs = await import("../public/src/quiz-state.js");
+    const qs = await import("../docs/src/quiz-state.js");
     qs.setQuizActive(true);
     assert.equal(document.body.dataset.quizActive, "true");
     qs.setQuizActive(false);
@@ -141,7 +141,7 @@ describe("smoke test — components and pages", () => {
   });
 
   test("quiz-choice fires onAnswer callback after click", async () => {
-    await import("../public/src/components/quiz-choice.js");
+    await import("../docs/src/components/quiz-choice.js");
     const q = document.createElement("quiz-choice");
     q.setAttribute("prompt", "test");
     q.setAttribute("options", '["a","b","c","d"]');
@@ -164,14 +164,14 @@ describe("smoke test — components and pages", () => {
   });
 
   test("xpEarned formats as +N XP, not [object Object]", async () => {
-    const i = await import("../public/src/services/i18n.js");
+    const i = await import("../docs/src/services/i18n.js");
     i.setLang("ru");
     assert.equal(i.t("quiz.xpEarned", 25), "+25 XP");
     assert.equal(i.t("quiz.xpEarned", 0), "+0 XP");
   });
 
   test("quiz-choice does NOT autoplay audio on render", async () => {
-    await import("../public/src/components/quiz-choice.js");
+    await import("../docs/src/components/quiz-choice.js");
     const q = document.createElement("quiz-choice");
     q.setAttribute("prompt", "test");
     q.setAttribute("options", '["a","b","c","d"]');
@@ -183,7 +183,7 @@ describe("smoke test — components and pages", () => {
   });
 
   test("quiz-letters does NOT replay audio when picking a letter", async () => {
-    await import("../public/src/components/quiz-letters.js");
+    await import("../docs/src/components/quiz-letters.js");
     const q = document.createElement("quiz-letters");
     q.setAttribute("prompt", "test");
     q.setAttribute("target", "cat");

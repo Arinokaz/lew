@@ -77,13 +77,13 @@
 
 ### Зависимости (vendor)
 
-Только одна runtime-зависимость — **Dexie.js**. Она поставляется как готовый ESM-файл, размещённый в `/public/src/vendor/dexie.min.mjs` (без npm install, без CDN в production).
+Только одна runtime-зависимость — **Dexie.js**. Она поставляется как готовый ESM-файл, размещённый в `/docs/src/vendor/dexie.min.mjs` (без npm install, без CDN в production).
 
 ### Принципы
 
 - **Production — это статические файлы.** Никакой сборки, никакой транспайляции.
 - **Все импорты — нативные ES modules с явными расширениями** (`./modules/db.js`).
-- **Без npm в runtime.** Если нужна библиотека — кладём готовый файл в `/public/src/vendor/`.
+- **Без npm в runtime.** Если нужна библиотека — кладём готовый файл в `/docs/src/vendor/`.
 - **Без TypeScript.** Ради простоты; типы документируем в JSDoc-комментариях (опционально).
 
 ---
@@ -262,7 +262,7 @@ Page "Repeat"
 ## 6. Структура проекта
 
 ```
-/public
+/docs
   index.html                     # SPA shell
   manifest.json                  # PWA manifest
   service-worker.js              # SW: precache + runtime cache
@@ -326,7 +326,7 @@ Page "Repeat"
   db.test.js                     # DB schema tests (with fake-indexeddb)
 /tools
   vendor-dexie.sh                # One-off script to download Dexie
-  serve.mjs                      # Dev-сервер (root = public/, без билда)
+  serve.mjs                      # Dev-сервер (root = docs/, без билда)
   build.mjs                      # Опциональный esbuild-билд в dist/
 package.json                     # Только для node:test runner + dev scripts
 SPEC.md                          # Этот документ
@@ -500,7 +500,7 @@ Dexie позволяет миграции через `.version(N).upgrade(tx => 
 | `tile-l1-en`, `tile-audio-en` | **10** (medium) | 8 |
 | `type-in`, `cloze`, `audio-type-in` | **20** (hard) | 10 |
 
-Очки XP рассчитываются отдельной функцией `xpForQuizType(quizType, correct)` в `public/src/services/quiz-factory.js` и **никогда не пишутся в `progress.points`** — они идут только в `stats.xp`.
+Очки XP рассчитываются отдельной функцией `xpForQuizType(quizType, correct)` в `docs/src/services/quiz-factory.js` и **никогда не пишутся в `progress.points`** — они идут только в `stats.xp`.
 
 ### Дневной кап и правила
 
@@ -607,7 +607,7 @@ export function sm2(card, q) {
 
 ### Streak-проверка
 
-При открытии Dashboard вызывается `refreshStreakOnVisit` (`public/src/services/streak.js`):
+При открытии Dashboard вызывается `refreshStreakOnVisit` (`docs/src/services/streak.js`):
 
 1. Читаем `streakLastDay` и `lastVisit` из LocalStorage.
 2. Считаем gap в календарных днях между `lastStreakDay` и сегодня:
@@ -618,7 +618,7 @@ export function sm2(card, q) {
 
 ### Идентификация «сегодня»
 
-- «Сегодня» = локальная дата пользователя, не UTC. `public/src/services/date.js#todayKey()` возвращает `"YYYY-MM-DD"` через `getFullYear/getMonth/getDate`.
+- «Сегодня» = локальная дата пользователя, не UTC. `docs/src/services/date.js#todayKey()` возвращает `"YYYY-MM-DD"` через `getFullYear/getMonth/getDate`.
 - Все «интервально-дневные» границы (`lastTouchedDate` на `progress`, ключ строки `stats`, снапшот пула `learnDailyPool`) используют эту функцию.
 - Для тестов `todayKey(date)` принимает объект `Date`, чтобы детерминированно замораживать время.
 
@@ -723,7 +723,7 @@ export function sm2(card, q) {
 
 ### XP (опыт)
 
-XP — отдельная метрика от SRS-очков. Начисляется во всех режимах, включая `/quiz` (sandbox). Значения рассчитываются функцией `xpForQuizType(quizType, correct)` в `public/src/services/quiz-factory.js`:
+XP — отдельная метрика от SRS-очков. Начисляется во всех режимах, включая `/quiz` (sandbox). Значения рассчитываются функцией `xpForQuizType(quizType, correct)` в `docs/src/services/quiz-factory.js`:
 
 | Действие | XP |
 |---|---|
@@ -1057,7 +1057,7 @@ Cache API в браузерах: обычно 50-100% от свободного 
 - **Диалоги подтверждения** — через кастомный компонент `<lew-dialog>` (focus trap, safe-area, закрытие по Esc/overlay). Нативные `confirm()` не используем.
 - Подсказки клавиатуры `(Esc)`/`(Enter)` показываем только под `@media (hover: hover) and (pointer: fine)`.
 - `prefers-reduced-motion: reduce` — отключаем ненужные анимации.
-- Единый источник стилей — `public/styles/*.css`. Никаких инжектируемых `<style>` из JS и inline-`style=""` (кроме динамических `width:%`/`height:%`).
+- Единый источник стилей — `docs/styles/*.css`. Никаких инжектируемых `<style>` из JS и inline-`style=""` (кроме динамических `width:%`/`height:%`).
 
 ### Темы
 

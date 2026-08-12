@@ -2,7 +2,7 @@ import { build } from "esbuild";
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const PUBLIC = "public";
+const PUBLIC = "docs";
 const OUT = "dist";
 
 function walk(dir, ext = [".js", ".css", ".html", ".json", ".svg", ".png", ".ico"]) {
@@ -30,7 +30,7 @@ async function main() {
   console.log("[build] bundling app.js + components + services + pages + styles...");
 
   await build({
-    entryPoints: ["public/src/app.js"],
+    entryPoints: [`${PUBLIC}/src/app.js`],
     bundle: true,
     format: "esm",
     target: ["es2022"],
@@ -43,11 +43,11 @@ async function main() {
   });
 
   await build({
-    entryPoints: ["public/styles/components.css", "public/styles/base.css", "public/styles/tokens.css"],
+    entryPoints: [`${PUBLIC}/styles/components.css`, `${PUBLIC}/styles/base.css`, `${PUBLIC}/styles/tokens.css`],
     bundle: true,
     minify: true,
     outdir: `${OUT}/styles`,
-    outbase: "public/styles",
+    outbase: `${PUBLIC}/styles`,
   });
 
   console.log("[build] copying assets...");
@@ -61,7 +61,7 @@ async function main() {
   }
 
   await build({
-    entryPoints: ["public/service-worker.js"],
+    entryPoints: [`${PUBLIC}/service-worker.js`],
     bundle: false,
     minify: true,
     outfile: `${OUT}/service-worker.js`,

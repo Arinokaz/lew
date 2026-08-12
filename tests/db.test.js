@@ -19,7 +19,7 @@ async function resetDb() {
     )
   );
   try {
-    const { invalidateCache } = await import("../public/src/services/db.js");
+    const { invalidateCache } = await import("../docs/src/services/db.js");
     invalidateCache();
   } catch (e) {}
 }
@@ -38,10 +38,10 @@ describe("db + SRS integration", () => {
   });
 
   test("import words, then answer word updates progress", async () => {
-    const dbMod = await import("../public/src/services/db.js");
+    const dbMod = await import("../docs/src/services/db.js");
     const db = dbMod.default;
-    const { importFromArray } = await import("../public/src/services/import.js");
-    const { recordQuizResult, createProgress } = await import("../public/src/services/srs.js");
+    const { importFromArray } = await import("../docs/src/services/import.js");
+    const { recordQuizResult, createProgress } = await import("../docs/src/services/srs.js");
 
     await db.words.clear();
     await db.progress.clear();
@@ -98,8 +98,8 @@ describe("db + SRS integration", () => {
   });
 
   test("recordQuizResult second hard quiz same day returns no-op-cap-reached", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { recordQuizResult } = await import("../public/src/services/srs.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { recordQuizResult } = await import("../docs/src/services/srs.js");
 
     await db.progress.clear();
     const first = await recordQuizResult(1, "type-in", true);
@@ -112,8 +112,8 @@ describe("db + SRS integration", () => {
   });
 
   test("wrong answer does not drop below pointsAtIntervalStart", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { recordQuizResult } = await import("../public/src/services/srs.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { recordQuizResult } = await import("../docs/src/services/srs.js");
 
     await db.progress.clear();
     await recordQuizResult(1, "type-in", true);
@@ -126,9 +126,9 @@ describe("db + SRS integration", () => {
   });
 
   test("getDueProgress returns due entries", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { importFromArray } = await import("../public/src/services/import.js");
-    const { recordQuizResult, getDueProgress } = await import("../public/src/services/srs.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { importFromArray } = await import("../docs/src/services/import.js");
+    const { recordQuizResult, getDueProgress } = await import("../docs/src/services/srs.js");
 
     await db.words.clear();
     await db.progress.clear();
@@ -155,8 +155,8 @@ describe("db + SRS integration", () => {
   });
 
   test("stats table records review correctly", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { recordReview, ensureTodayStats } = await import("../public/src/services/stats.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { recordReview, ensureTodayStats } = await import("../docs/src/services/stats.js");
 
     await db.stats.clear();
     await ensureTodayStats();
@@ -173,8 +173,8 @@ describe("db + SRS integration", () => {
   });
 
   test("stats recordReview tracks audioTotal and maxSpeed", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { recordReview, ensureTodayStats } = await import("../public/src/services/stats.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { recordReview, ensureTodayStats } = await import("../docs/src/services/stats.js");
 
     await db.stats.clear();
     await ensureTodayStats();
@@ -192,7 +192,7 @@ describe("db + SRS integration", () => {
   });
 
   test("resetAll wipes IDB, cache, and lew.* LocalStorage", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
+    const db = (await import("../docs/src/services/db.js")).default;
     await db.words.bulkPut([{ id: 1, word: "x", level: "A1", type: "noun", translations: { ru: "", ua: "" }, audio: {}, phonetics: {}, examples: [] }]);
     await db.progress.bulkPut([{ wordId: 1, points: 50, successCount: 1, failCount: 0 }]);
     await db.stats.put({ date: "2026-08-11", reviewed: 1, learned: 1, correct: 1, wrong: 0, minutes: 0, xp: 5, pointsEarned: 5, stageUps: 0, audioTotal: 0, maxSpeed: 0 });
@@ -203,11 +203,11 @@ describe("db + SRS integration", () => {
     localStorage.setItem("lew.dailyPool.2026-08-10", "{}");
     localStorage.setItem("not-lew.foo", "bar");
 
-    const { getAllProgress, getAllWords } = await import("../public/src/services/db.js");
+    const { getAllProgress, getAllWords } = await import("../docs/src/services/db.js");
     await getAllProgress();
     await getAllWords();
 
-    const { resetAll } = await import("../public/src/services/backup.js");
+    const { resetAll } = await import("../docs/src/services/backup.js");
     await resetAll();
 
     assert.equal(await db.words.count(), 0, "words cleared");
@@ -227,14 +227,14 @@ describe("db + SRS integration", () => {
   });
 
   test("importFromArray invalidates words cache", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
+    const db = (await import("../docs/src/services/db.js")).default;
     await db.words.bulkPut([{ id: 99, word: "stale", level: "A1", type: "noun", translations: { ru: "", ua: "" }, audio: {}, phonetics: {}, examples: [] }]);
-    const { getAllWords } = await import("../public/src/services/db.js");
+    const { getAllWords } = await import("../docs/src/services/db.js");
     const stale = await getAllWords();
     assert.equal(stale.length, 1);
     assert.equal(stale[0].word, "stale");
 
-    const { importFromArray } = await import("../public/src/services/import.js");
+    const { importFromArray } = await import("../docs/src/services/import.js");
     await importFromArray([
       { id: 99, value: { word: "fresh", translations: { ru: "", ua: "" }, level: "A1", type: "noun" } },
     ]);
@@ -245,7 +245,7 @@ describe("db + SRS integration", () => {
   });
 
   test("computeStats totalReviews comes from db.stats.reviewed, not progress counters", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
+    const db = (await import("../docs/src/services/db.js")).default;
     await db.stats.clear();
     await db.words.clear();
     await db.progress.clear();
@@ -258,7 +258,7 @@ describe("db + SRS integration", () => {
       { date: "2026-08-11", reviewed: 5, learned: 1, correct: 5, wrong: 0, minutes: 0, xp: 25, pointsEarned: 20, stageUps: 1, audioTotal: 0, maxSpeed: 0 },
     ]);
 
-    const { computeStats } = await import("../public/src/services/achievements.js");
+    const { computeStats } = await import("../docs/src/services/achievements.js");
     const stats = await computeStats();
 
     assert.equal(stats.totalReviews, 8, "totalReviews = sum of stats.reviewed (3+5)");

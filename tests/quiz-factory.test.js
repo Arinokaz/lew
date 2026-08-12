@@ -15,9 +15,9 @@ import {
   quizTileL1En,
   buildQuiz,
   invalidateDistractorCache,
-} from "../public/src/services/quiz-factory.js";
-import { pointsForQuizType } from "../public/src/services/srs.js";
-import db from "../public/src/services/db.js";
+} from "../docs/src/services/quiz-factory.js";
+import { pointsForQuizType } from "../docs/src/services/srs.js";
+import db from "../docs/src/services/db.js";
 
 function makeWord(overrides = {}) {
   return {

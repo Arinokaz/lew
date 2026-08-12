@@ -5,7 +5,7 @@
 > **Current state:** All major refactors are shipped and reflected here:
 >
 > - SRS uses a **points-based hybrid** (0–100 pts drive stages, SM-2 reserved for mastered phase ≥100 pts). Quiz difficulty is **not** tied to stage — the user freely picks any of 9 quiz types per session.
-> - UI is **mobile-first** (safe-area aware, inline-SVG icons via `<lew-icon>`, `<lew-dialog>` for confirms, "5 + More" bottom nav, segmented controls, dropdown nav on `≥1024px` becomes left sidebar). All styles live in `public/styles/*.css` — never inject `<style>` from JS, never inline `style=""` except for truly dynamic values (`width:%`, `height:%`).
+> - UI is **mobile-first** (safe-area aware, inline-SVG icons via `<lew-icon>`, `<lew-dialog>` for confirms, "5 + More" bottom nav, segmented controls, dropdown nav on `≥1024px` becomes left sidebar). All styles live in `docs/styles/*.css` — never inject `<style>` from JS, never inline `style=""` except for truly dynamic values (`width:%`, `height:%`).
 > - Polish audit (`P15`) is done: `<lew-toggle>` CSS fix, audio parity in every quiz component, WCAG AA contrast (`--color-primary` → `#4f46e5`), `color-scheme`, `forced-colors`, `withTimeout` for IDB, scroll-restoration, leave-quiz dialog, iOS PWA meta, race-condition guards (`_navToken` on `<app-shell>`, `active` flag on every page), `document.title` dynamic, `view-transitions` ready.
 > - 165/165 tests green at the time of this revision.
 
@@ -29,7 +29,7 @@
 | Components | **Web Components** (Custom Elements) | Shadow DOM optional |
 | Templates | **`<template>` + `cloneNode`** | Native; also direct string templates |
 | Styling | **Plain CSS + CSS Custom Properties** | Variables for theming |
-| Database | **IndexedDB via Dexie.js** | Vendored in `/public/src/vendor/` (`dexie.min.mjs`), not via npm |
+| Database | **IndexedDB via Dexie.js** | Vendored in `/docs/src/vendor/` (`dexie.min.mjs`), not via npm |
 | Local settings | **LocalStorage** | Synchronous |
 | Audio cache | **Cache API via Service Worker** | Lazy, per-first-play |
 | Service Worker | **Native, no Workbox** | Hand-written `service-worker.js` |
@@ -99,7 +99,7 @@ The dictionary comes from `words.json` in the project root.
 ## 4. Project Structure
 
 ```
-/public
+/docs
   index.html                     # SPA shell (iOS PWA meta tags + viewport-fit=cover)
   manifest.json                  # PWA manifest
   service-worker.js              # SW: precache + runtime cache + update flow
@@ -263,7 +263,7 @@ The active learning phase (0–100 pts) uses a **points accumulator** with a per
 
 ### Quiz types and points
 
-`POINTS_FOR_QUIZ_TYPE` is a static map in `public/src/services/srs.js`:
+`POINTS_FOR_QUIZ_TYPE` is a static map in `docs/src/services/srs.js`:
 
 | Quiz type | SRS points |
 |---|---|
@@ -271,7 +271,7 @@ The active learning phase (0–100 pts) uses a **points accumulator** with a per
 | `tile-l1-en`, `tile-audio-en` | **10** (medium) |
 | `type-in`, `cloze`, `audio-type-in` | **20** (hard) |
 
-`xpForQuizType(quizType, correct)` in `public/src/services/quiz-factory.js` returns a separate gamification XP value (5/7/8/10 for correct, **1** for wrong). XP never touches `progress.points`.
+`xpForQuizType(quizType, correct)` in `docs/src/services/quiz-factory.js` returns a separate gamification XP value (5/7/8/10 for correct, **1** for wrong). XP never touches `progress.points`.
 
 ### Daily cap & rules
 
@@ -367,7 +367,7 @@ The app has **three independent modes**, each with its own page. The user picks 
 
 ### Streak check
 
-On Dashboard load (`refreshStreakOnVisit` in `public/src/services/streak.js`):
+On Dashboard load (`refreshStreakOnVisit` in `docs/src/services/streak.js`):
 
 1. Read `streakLastDay` and `lastVisit` from LocalStorage.
 2. Compute the gap in calendar days between `lastStreakDay` and today.
@@ -378,7 +378,7 @@ On Dashboard load (`refreshStreakOnVisit` in `public/src/services/streak.js`):
 
 ### `today` definition
 
-- `today` = local user date, not UTC. `public/src/services/date.js#todayKey()` returns `"YYYY-MM-DD"` from `getFullYear/getMonth/getDate`. All "interval day" boundaries (`lastTouchedDate`, the daily-stats row key, the daily pool snapshot) use this.
+- `today` = local user date, not UTC. `docs/src/services/date.js#todayKey()` returns `"YYYY-MM-DD"` from `getFullYear/getMonth/getDate`. All "interval day" boundaries (`lastTouchedDate`, the daily-stats row key, the daily pool snapshot) use this.
 - For tests, `todayKey(date)` accepts a `Date` argument so tests can freeze time deterministically.
 
 ---
@@ -401,7 +401,7 @@ All 9 types are available at every stage; the user picks freely per session.
 
 ### Component shared base
 
-All quiz components extend `BaseQuizElement` (`public/src/components/base-quiz-element.js`), which centralizes:
+All quiz components extend `BaseQuizElement` (`docs/src/components/base-quiz-element.js`), which centralizes:
 
 - `_installKeyHandler` / `_cleanupKeys` — keyboard handler attachment + cleanup on disconnect.
 - `_handleSkip` — fires `{ correct: false, skipped: true }` after announcing the correct answer.
@@ -456,7 +456,7 @@ If a word has no `examples[0]` or the word doesn't appear as `\b…\b` in its ex
 | `/stats` | Statistics | Charts + achievement gallery |
 | `/settings` | Settings | All user settings + backup/restore |
 
-The router (`public/src/router.js`) uses the History API:
+The router (`docs/src/router.js`) uses the History API:
 
 - `history.scrollRestoration = "manual"`; on each forward `go()` we `replaceState({ scrollY }, current)` first and `pushState({}, "", path)`, so navigating back restores the previous scroll position.
 - `popstate` triggers `emit(path, { restoreScroll: true })`.
@@ -484,7 +484,7 @@ The router (`public/src/router.js`) uses the History API:
 
 ### iOS PWA meta
 
-`public/index.html` carries the apple-mobile-web-app-* meta tags (capable=yes, status-bar-style=black-translucent, title=LEW) plus `apple-touch-icon` and `apple-touch-startup-image` for cold-launch icons and splash. `viewport-fit=cover` is set; safe-area CSS tokens use the resulting `env(safe-area-inset-*)` values.
+`docs/index.html` carries the apple-mobile-web-app-* meta tags (capable=yes, status-bar-style=black-translucent, title=LEW) plus `apple-touch-icon` and `apple-touch-startup-image` for cold-launch icons and splash. `viewport-fit=cover` is set; safe-area CSS tokens use the resulting `env(safe-area-inset-*)` values.
 
 ---
 
@@ -504,7 +504,7 @@ import { add, PI } from './math.js'; // explicit .js!
 ```
 
 ```js
-// public/src/services/db.js
+// docs/src/services/db.js
 import Dexie from '../vendor/dexie.min.mjs';
 ```
 
@@ -547,7 +547,7 @@ customElements.define('my-el', MyEl);
 - Prefer `const` over `let`. Never use `var`.
 - Use async/await, not `.then()` chains.
 - Errors should propagate; pages handle UI for them.
-- When a slow IDB query might hang the UI, wrap with `withTimeout(promise, ms, fallback)` (added in `public/src/services/db.js`). A timed-out call resolves to the fallback so pages render an empty state instead of spinning forever.
+- When a slow IDB query might hang the UI, wrap with `withTimeout(promise, ms, fallback)` (added in `docs/src/services/db.js`). A timed-out call resolves to the fallback so pages render an empty state instead of spinning forever.
 - When a page mounts and there is any chance of fast repeat navigation, use the `_navToken` re-entrancy guard (see `app-shell.js#_navigateTo`) and the `active` flag pattern (`dashboard.js`, `learn.js`, `repeat.js`, `quiz.js`, `onboarding.js`, `dictionary.js`, `stats.js`, `settings.js`).
 
 ### CSS
@@ -558,7 +558,7 @@ customElements.define('my-el', MyEl);
 - **Safe areas:** `--safe-top/bottom/left/right` tokens (`env(safe-area-inset-*)`) on header, nav, and edges. `viewport-fit=cover` is set in `index.html`.
 - **Touch targets** ≥ `--tap-min` (44×44). Every interactive element needs `:active` and `:focus-visible` states.
 - Respect `@media (prefers-reduced-motion: reduce)`, `(hover: hover) and (pointer: fine)` (for keyboard hints only), `(pointer: coarse)` (disable hover-only effects), `forced-colors: active` (transparent `-webkit-text-fill-color` overrides to `CanvasText`).
-- **Single source of truth:** all styles live in `public/styles/*.css`. Never inject `<style>` from JS, never use inline `style=""` except for truly dynamic values (`width:${pct}%`, `height:${h}%`).
+- **Single source of truth:** all styles live in `docs/styles/*.css`. Never inject `<style>` from JS, never use inline `style=""` except for truly dynamic values (`width:${pct}%`, `height:${h}%`).
 - `--color-primary` is **`#4f46e5`** (was `#6366f1` — old value failed WCAG AA at 12–16 px text). Keep `--gradient-brand` as the original triplet; it stays on dark surfaces and large sizes where contrast is not an issue.
 - No CSS-in-JS, no Tailwind, no preprocessors.
 
@@ -577,9 +577,9 @@ Single vendor dep. Dexie ESM build, vendored locally. Do not load from CDN at ru
 ### Dev server (no build)
 
 ```bash
-npx serve public/
+npx serve docs/
 # or
-python3 -m http.server 8000 --directory public
+python3 -m http.server 8000 --directory docs
 # or
 node tools/serve.mjs   # convenience wrapper used by `npm run dev`
 ```
@@ -602,7 +602,7 @@ npm run vendor:dexie
 bash tools/vendor-dexie.sh
 ```
 
-Downloads Dexie's ESM build into `public/src/vendor/dexie.min.mjs`. Run once during setup.
+Downloads Dexie's ESM build into `docs/src/vendor/dexie.min.mjs`. Run once during setup.
 
 ### Coverage (optional)
 
@@ -661,7 +661,7 @@ The bundle is a possible future post-release optimization. The running app does 
 
 ### Do
 
-- Read `words.json` only during the import flow (`public/src/services/import.js`).
+- Read `words.json` only during the import flow (`docs/src/services/import.js`).
 - Use services for all IDB access. Never call `indexedDB.open()` from a component or page.
 - Write tests for any change to SRS or quiz-factory logic. Run `npm test` before declaring a phase complete.
 - Use the router for all navigation (`router.go('/repeat')`, never `location.href`).
@@ -684,7 +684,7 @@ The bundle is a possible future post-release optimization. The running app does 
 - Load Dexie from npm at runtime (must be vendored).
 - Add code comments unless explicitly asked.
 - Use TypeScript.
-- Touch `public/src/services/*` business logic from a UI redocument — but adding i18n keys, `withTimeout`, and `colorScheme` in `applyTheme` is allowed.
+- Touch `docs/src/services/*` business logic from a UI redocument — but adding i18n keys, `withTimeout`, and `colorScheme` in `applyTheme` is allowed.
 - Inject `<style>` from JS or set inline `style="..."` (except dynamic `width:%`/`height:%`).
 - Use emoji as the primary icon in nav or controls.
 

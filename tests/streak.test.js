@@ -32,19 +32,19 @@ describe("streak in LocalStorage (SPEC §11)", () => {
   });
 
   test("getStreakLastDay reads from LS", async () => {
-    const { setStreakLastDay, getStreakLastDay } = await import("../public/src/services/streak.js");
+    const { setStreakLastDay, getStreakLastDay } = await import("../docs/src/services/streak.js");
     setStreakLastDay("2026-01-15");
     assert.equal(getStreakLastDay(), "2026-01-15");
   });
 
   test("initial streak is 0 when no LS key", async () => {
-    const { getStreak } = await import("../public/src/services/streak.js");
+    const { getStreak } = await import("../docs/src/services/streak.js");
     const streak = await getStreak();
     assert.equal(streak, 0);
   });
 
   test("refreshStreakOnVisit sets LS key", async () => {
-    const { refreshStreakOnVisit, getStreakLastDay } = await import("../public/src/services/streak.js");
+    const { refreshStreakOnVisit, getStreakLastDay } = await import("../docs/src/services/streak.js");
     await refreshStreakOnVisit();
     const key = getStreakLastDay();
     assert.ok(key, "LS key should be set after visit");
@@ -54,7 +54,7 @@ describe("streak in LocalStorage (SPEC §11)", () => {
 
 describe("achievements completeness (SPEC §11)", () => {
   test("has 19 achievements including polyglot_audio and speed_demon", async () => {
-    const { ACHIEVEMENTS } = await import("../public/src/services/achievements.js");
+    const { ACHIEVEMENTS } = await import("../docs/src/services/achievements.js");
     assert.equal(ACHIEVEMENTS.length, 19);
     const ids = ACHIEVEMENTS.map((a) => a.id);
     assert.ok(ids.includes("polyglot_audio"));
@@ -64,7 +64,7 @@ describe("achievements completeness (SPEC §11)", () => {
   });
 
   test("polyglot_audio triggers at 50 audioTotal", async () => {
-    const { ACHIEVEMENTS } = await import("../public/src/services/achievements.js");
+    const { ACHIEVEMENTS } = await import("../docs/src/services/achievements.js");
     const a = ACHIEVEMENTS.find((x) => x.id === "polyglot_audio");
     assert.equal(a.check({ audioTotal: 0 }), false);
     assert.equal(a.check({ audioTotal: 49 }), false);
@@ -72,21 +72,21 @@ describe("achievements completeness (SPEC §11)", () => {
   });
 
   test("points_100_day triggers at 100 todayPointsEarned", async () => {
-    const { ACHIEVEMENTS } = await import("../public/src/services/achievements.js");
+    const { ACHIEVEMENTS } = await import("../docs/src/services/achievements.js");
     const a = ACHIEVEMENTS.find((x) => x.id === "points_100_day");
     assert.equal(a.check({ todayPointsEarned: 99 }), false);
     assert.equal(a.check({ todayPointsEarned: 100 }), true);
   });
 
   test("speed_demon triggers at 20 maxSpeed", async () => {
-    const { ACHIEVEMENTS } = await import("../public/src/services/achievements.js");
+    const { ACHIEVEMENTS } = await import("../docs/src/services/achievements.js");
     const a = ACHIEVEMENTS.find((x) => x.id === "speed_demon");
     assert.equal(a.check({ maxSpeed: 19 }), false);
     assert.equal(a.check({ maxSpeed: 20 }), true);
   });
 
   test("first_word triggers on totalActivated (points >= 20)", async () => {
-    const { ACHIEVEMENTS } = await import("../public/src/services/achievements.js");
+    const { ACHIEVEMENTS } = await import("../docs/src/services/achievements.js");
     const a = ACHIEVEMENTS.find((x) => x.id === "first_word");
     assert.equal(a.check({ totalActivated: 0, totalLearned: 5 }), false);
     assert.equal(a.check({ totalActivated: 1 }), true);
@@ -99,8 +99,8 @@ describe("stats.addSessionBonus (SPEC §11)", () => {
   });
 
   test("adds 25 XP bonus after session", async () => {
-    const db = (await import("../public/src/services/db.js")).default;
-    const { ensureTodayStats, addSessionBonus } = await import("../public/src/services/stats.js");
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { ensureTodayStats, addSessionBonus } = await import("../docs/src/services/stats.js");
     await ensureTodayStats();
     const before = await db.stats.toArray();
     const beforeXp = before[0]?.xp || 0;
