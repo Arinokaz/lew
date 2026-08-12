@@ -1,17 +1,32 @@
 const listeners = new Set();
-let current = "/";
+
+const BASE = new URL("./", document.baseURI).pathname;
+
+let current = toRel(location.pathname || "/");
 
 if (typeof window !== "undefined" && "scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
+function toFull(rel) {
+  if (!rel || rel === "/") return BASE || "/";
+  const stripped = rel.replace(/^\//, "");
+  return (BASE || "") + stripped;
+}
+
+function toRel(full) {
+  const f = full || "/";
+  if (BASE && f === BASE) return "/";
+  if (BASE && f.startsWith(BASE)) return "/" + f.slice(BASE.length);
+  return f;
+}
+
 export function init(getRoutes) {
   window.addEventListener("popstate", (e) => {
-    const next = location.pathname || "/";
+    const next = toRel(location.pathname || "/");
     if (next === current) return;
     if (document.body.dataset.quizActive === "true") {
-      // Re-push the current path to abort navigation, ask user via dialog
-      history.pushState({}, "", current);
+      history.pushState({}, "", toFull(current));
       import("./components/dialog.js").then(async ({ openDialog }) => {
         const i18n = (await import("./services/i18n.js"));
         const ok = await openDialog({
@@ -50,25 +65,27 @@ export function init(getRoutes) {
     go(href);
   });
 
-  current = location.pathname || "/";
+  current = toRel(location.pathname || "/");
   return current;
 }
 
 export function go(path, opts = {}) {
-  if (path === current && !opts.force) return;
+  const rel = path || "/";
+  if (rel === current && !opts.force) return;
   const userInitiated = opts.userInitiated !== false;
+  const full = toFull(rel);
   if (!opts.replace) {
     try {
-      history.replaceState({ scrollY: window.scrollY }, "", current);
+      history.replaceState({ scrollY: window.scrollY }, "", toFull(current));
     } catch (e) {
-      history.replaceState({}, "", current);
+      history.replaceState({}, "", toFull(current));
     }
-    history.pushState({}, "", path);
+    history.pushState({}, "", full);
   } else {
-    history.replaceState({}, "", path);
+    history.replaceState({}, "", full);
   }
-  current = path;
-  emit(path, { restoreScroll: false, userInitiated });
+  current = rel;
+  emit(current, { restoreScroll: false, userInitiated });
 }
 
 export function silentGo(path) {
@@ -96,8 +113,4 @@ function emit(path, opts = {}) {
       console.warn("[router] listener error", e);
     }
   }
-}
-
-export function href(path) {
-  return path;
 }
