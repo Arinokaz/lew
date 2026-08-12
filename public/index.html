@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#a5b4fc" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Запоминай английские слова Oxford 5000 с интервальным повторением SM-2" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LEW" />
+
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon-180.png" />
+
+    <link rel="stylesheet" href="./styles/reset.css" />
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+
+    <title>LEW — Learn English Words</title>
+
+    <link rel="modulepreload" href="./src/pages/dashboard.js" />
+    <link rel="modulepreload" href="./src/pages/learn.js" />
+    <link rel="modulepreload" href="./src/pages/repeat.js" />
+    <link rel="modulepreload" href="./src/pages/dictionary.js" />
+
+    <style>
+      .splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+        background: var(--color-bg);
+        z-index: var(--z-modal);
+        transition: opacity var(--transition-slow);
+      }
+      .splash--hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .splash__title {
+        font-size: var(--font-size-3xl);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="splash" id="splash">
+        <div class="splash__title">LEW</div>
+        <div class="spinner" aria-label="Загрузка"></div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
