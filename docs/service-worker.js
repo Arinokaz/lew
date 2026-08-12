@@ -1,4 +1,4 @@
-const BUILD = "v2";
+const BUILD = "v1.2";
 const APP_CACHE = `lew-app-${BUILD}`;
 const DATA_CACHE = `lew-data-${BUILD}`;
 const AUDIO_CACHE = `lew-audio-${BUILD}`;

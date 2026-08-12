@@ -51,9 +51,10 @@ async function main() {
   });
 
   console.log("[build] copying assets...");
-  for (const f of walk(PUBLIC, [".js", ".mjs", ".json", ".svg", ".png", ".ico", ".webmanifest"])) {
+  for (const f of walk(PUBLIC, [".js", ".mjs", ".json", ".svg", ".png", ".ico", ".webmanifest", ".html"])) {
     if (f.includes(`${PUBLIC}/src/`) || f.includes(`${PUBLIC}/styles/`)) continue;
     if (f.includes("service-worker.js")) continue;
+    if (f.endsWith(`${PUBLIC}/index.html`)) continue;
     const dst = join(OUT, relative(PUBLIC, f));
     ensureDir(dst.replace(/\/[^/]+$/, ""));
     const data = readFileSync(f);
