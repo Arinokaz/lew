@@ -237,9 +237,7 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
       const stageUp = event === "stage-up" || event === "mastered";
       const elapsedSec = Math.max(1, Math.round((Date.now() - cardStartMs) / 1000));
       if (correct && !studied) speed = Math.round((60 / elapsedSec) * 10) / 10;
-      if (event === "no-op-cap-reached") {
-        toast(i18n.t("quiz.capReached"), { kind: "info", duration: 4000 });
-      } else if (event === "reset-to-new") {
+      if (event === "reset-to-new") {
         toast(i18n.t("quiz.resetToNew"), { kind: "warn", duration: 4000 });
       } else if (event === "reset-to-active") {
         toast(i18n.t("quiz.resetToActive"), { kind: "warn", duration: 4000 });
