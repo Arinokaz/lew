@@ -191,6 +191,25 @@ describe("db + SRS integration", () => {
     assert.equal(s3.maxSpeed, 25);
   });
 
+  test("neutral review bumps reviewed + xp but not correct/wrong", async () => {
+    const db = (await import("../docs/src/services/db.js")).default;
+    const { recordReview, ensureTodayStats } = await import("../docs/src/services/stats.js");
+
+    await db.stats.clear();
+    await ensureTodayStats();
+    const before = await db.stats.get(new Date().toISOString().slice(0, 10));
+    const baseCorrect = before.correct;
+    const baseWrong = before.wrong;
+    const baseReviewed = before.reviewed;
+
+    const s = await recordReview({ correct: true, neutral: true, xp: 1, pointsEarned: 1 });
+    assert.equal(s.reviewed, baseReviewed + 1, "neutral still counts as a touch for streak");
+    assert.equal(s.correct, baseCorrect, "neutral must not inflate correct");
+    assert.equal(s.wrong, baseWrong, "neutral must not inflate wrong");
+    assert.equal(s.xp, 1, "xp still credited");
+    assert.equal(s.pointsEarned, 1, "pointsEarned still credited");
+  });
+
   test("resetAll wipes IDB, cache, and lew.* LocalStorage", async () => {
     const db = (await import("../docs/src/services/db.js")).default;
     await db.words.bulkPut([{ id: 1, word: "x", level: "A1", type: "noun", translations: { ru: "", ua: "" }, audio: {}, phonetics: {}, examples: [] }]);

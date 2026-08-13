@@ -52,6 +52,8 @@ export const STAGE_UP_POINTS = 20;
 export const MAX_POINTS = 100;
 export const DAILY_CAP = 20;
 export const RESET_WRONG_THRESHOLD = 3;
+export const PREVIEW_QUIZ_TYPE = "preview";
+export const PREVIEW_DAILY_CAP = 10;
 
 const DEFAULT_EF = 2.5;
 const MASTERED_INITIAL_INTERVAL = 60;
@@ -83,6 +85,7 @@ export function createProgress(wordId) {
     pointsAtIntervalStart: 0,
     accumulatedToday: 0,
     wrongToday: 0,
+    previewAccumulatedToday: 0,
     lastTouchedDate: null,
   };
 }
@@ -100,6 +103,7 @@ export function normalizeProgress(progress) {
     pointsAtIntervalStart: safeInt(progress?.pointsAtIntervalStart, 0),
     accumulatedToday: safeInt(progress?.accumulatedToday, 0),
     wrongToday: safeInt(progress?.wrongToday, 0),
+    previewAccumulatedToday: safeInt(progress?.previewAccumulatedToday, 0),
     lastTouchedDate:
       typeof progress?.lastTouchedDate === "string"
         ? progress.lastTouchedDate
@@ -113,10 +117,12 @@ export function normalizeProgress(progress) {
   };
   if (base.points > MAX_POINTS) base.points = MAX_POINTS;
   if (base.accumulatedToday > DAILY_CAP) base.accumulatedToday = DAILY_CAP;
+  if (base.previewAccumulatedToday > PREVIEW_DAILY_CAP) base.previewAccumulatedToday = PREVIEW_DAILY_CAP;
   if (base.lastTouchedDate && base.lastTouchedDate !== today) {
     base.pointsAtIntervalStart = base.points;
     base.accumulatedToday = 0;
     base.wrongToday = 0;
+    base.previewAccumulatedToday = 0;
     base.lastTouchedDate = today;
   }
   return base;
@@ -142,6 +148,7 @@ export const POINTS_FOR_QUIZ_TYPE = {
   "type-in": 20,
   "cloze": 20,
   "audio-type-in": 20,
+  [PREVIEW_QUIZ_TYPE]: 1,
 };
 
 export function pointsForQuizType(quizType) {
@@ -197,6 +204,7 @@ function resetToNew(progress) {
   progress.pointsAtIntervalStart = 0;
   progress.accumulatedToday = 0;
   progress.wrongToday = 0;
+  progress.previewAccumulatedToday = 0;
   progress.nextReview = Date.now();
   progress.lastReview = null;
   progress.lastTouchedDate = todayKey();
@@ -245,15 +253,27 @@ function applyMastered(progress, correct) {
 
 function applyActive(progress, quizType, correct) {
   const cost = pointsForQuizType(quizType);
+  const isPreview = quizType === PREVIEW_QUIZ_TYPE;
   if (correct) {
     if (progress.accumulatedToday >= DAILY_CAP) {
       progress.lastReview = Date.now();
       progress.lastTouchedDate = todayKey();
       return "no-op-cap-reached";
     }
+    if (isPreview && progress.previewAccumulatedToday >= PREVIEW_DAILY_CAP) {
+      progress.lastReview = Date.now();
+      progress.lastTouchedDate = todayKey();
+      return "no-op-cap-reached";
+    }
     const next = Math.min(DAILY_CAP, progress.accumulatedToday + cost);
     progress.accumulatedToday = next;
-    progress.successCount += 1;
+    if (isPreview) {
+      progress.previewAccumulatedToday = Math.min(
+        PREVIEW_DAILY_CAP,
+        progress.previewAccumulatedToday + cost
+      );
+    }
+    if (!isPreview) progress.successCount += 1;
     progress.lastReview = Date.now();
     progress.lastTouchedDate = todayKey();
     if (progress.accumulatedToday >= DAILY_CAP) {

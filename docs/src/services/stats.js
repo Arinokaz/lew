@@ -37,14 +37,17 @@ export async function recordReview({
   stageUp = false,
   audio = false,
   speed = 0,
+  neutral = false,
 } = {}) {
   const today = todayKey();
   return db.transaction("rw", db.stats, async () => {
     const existing = (await db.stats.get(today)) || freshStats(today);
     existing.reviewed += 1;
-    if (correct) existing.correct += 1;
-    else existing.wrong += 1;
-    if (isNew && correct) existing.learned += 1;
+    if (!neutral) {
+      if (correct) existing.correct += 1;
+      else existing.wrong += 1;
+      if (isNew && correct) existing.learned += 1;
+    }
     existing.minutes += minutes;
     existing.xp += xp;
     if (pointsEarned) existing.pointsEarned += pointsEarned;

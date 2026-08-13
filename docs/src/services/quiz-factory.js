@@ -1,6 +1,7 @@
 import db from "./db.js";
 import { todayKey } from "./date.js";
 import { levenshtein, shuffle } from "./random.js";
+import { PREVIEW_QUIZ_TYPE } from "./srs.js";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const _distractorCache = new Map();
@@ -305,6 +306,13 @@ export async function quizClozeChoice(word, lang, activeLevels) {
   });
 }
 
+export async function quizPreview(word, lang) {
+  return quizSpec("quiz-preview", {
+    "word-data": JSON.stringify(word),
+    lang: lang || "ru",
+  });
+}
+
 export const QUIZ_FACTORIES = {
   "en-to-l1": quizEnToL1,
   "l1-to-en": quizL1ToEn,
@@ -315,6 +323,7 @@ export const QUIZ_FACTORIES = {
   "type-in": quizTypeIn,
   "cloze": quizCloze,
   "audio-type-in": quizAudioTypeIn,
+  [PREVIEW_QUIZ_TYPE]: quizPreview,
 };
 
 export async function buildQuiz(quizType, word, lang, activeLevels) {
@@ -323,10 +332,13 @@ export async function buildQuiz(quizType, word, lang, activeLevels) {
   return factory(word, lang, activeLevels);
 }
 
-export const QUIZ_TYPES = Object.keys(QUIZ_FACTORIES);
+export const QUIZ_TYPES = Object.keys(QUIZ_FACTORIES).filter(
+  (t) => t !== PREVIEW_QUIZ_TYPE
+);
 
 export function xpForQuizType(quizType, correct) {
   if (!correct) return 1;
+  if (quizType === PREVIEW_QUIZ_TYPE) return 1;
   switch (quizType) {
     case "type-in":
     case "cloze":

@@ -42,7 +42,7 @@ export class BaseQuizElement extends HTMLElement {
 
   _fire(payload, skipped = false) {
     this._cleanupKeys();
-    const delay = skipped ? 0 : payload.correct ? 500 : 1500;
+    const delay = skipped || payload.studied ? 0 : payload.correct ? 500 : 1500;
     const fire = () => {
       if (this._onAnswer) this._onAnswer({ ...payload, skipped: !!skipped });
     };

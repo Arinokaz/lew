@@ -410,6 +410,117 @@ word-card {
   margin-bottom: 0;
 }
 
+quiz-preview {
+  display: block;
+}
+
+.quiz-preview {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.quiz-preview__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quiz-preview__headword {
+  font-size: var(--font-size-fluid-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  overflow-wrap: anywhere;
+}
+
+.quiz-preview__meta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  flex-wrap: wrap;
+}
+
+.quiz-preview__type {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-fg);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.quiz-preview__level {
+  background: var(--color-bg-active);
+  color: var(--color-fg-muted);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.quiz-preview__phonetic {
+  color: var(--color-fg-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.quiz-preview__audio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.quiz-preview__translation {
+  font-size: var(--font-size-lg);
+  color: var(--color-fg);
+  font-weight: 500;
+}
+
+.quiz-preview__example {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.quiz-preview__example-en {
+  font-size: var(--font-size-sm);
+  color: var(--color-fg);
+}
+
+.quiz-preview__example-tr {
+  font-size: var(--font-size-sm);
+  color: var(--color-fg-muted);
+}
+
+.quiz-preview__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.quiz-preview__actions .btn {
+  min-width: 60%;
+}
+
+@media (forced-colors: active) {
+  .quiz-preview__headword {
+    -webkit-text-fill-color: CanvasText;
+  }
+}
+
 quiz-choice {
   display: block;
 }
@@ -1403,6 +1514,80 @@ quiz-input {
 .quiz-selector__btn--active {
   border-color: var(--color-primary);
   background: var(--color-bg-subtle);
+}
+
+.quiz-selector__preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+  border: 2px dashed var(--color-primary);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-md);
+  color: var(--color-primary-soft-fg);
+  text-align: left;
+  font-weight: 500;
+  transition: background var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.quiz-selector__preview:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.quiz-selector__preview:active {
+  transform: scale(0.99);
+}
+
+.quiz-selector__preview:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.quiz-selector__preview[aria-pressed="true"] {
+  background: var(--color-bg-subtle);
+  border-style: solid;
+}
+
+.quiz-selector__preview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.quiz-selector__preview-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.quiz-selector__preview-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.quiz-selector__preview-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+}
+
+.quiz-selector__preview-pts {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-subtle);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 @media (min-width: 480px) {

@@ -20,6 +20,8 @@ import {
   MAX_POINTS,
   DAILY_CAP,
   RESET_WRONG_THRESHOLD,
+  PREVIEW_QUIZ_TYPE,
+  PREVIEW_DAILY_CAP,
   MIN_EF,
   MAX_INTERVAL,
   DAY_MS,
@@ -82,6 +84,9 @@ describe("pointsForQuizType", () => {
   });
   test("cloze-choice: 5 pts (easy)", () => {
     assert.equal(pointsForQuizType("cloze-choice"), 5);
+  });
+  test("preview: 1 pt", () => {
+    assert.equal(pointsForQuizType("preview"), 1);
   });
 });
 
@@ -482,6 +487,68 @@ describe("recordQuizResult — cap-reached and stage-up edge cases", () => {
     assert.ok(!isNewWord({ points: 1 }));
     assert.ok(!isNewWord({ lastReview: 1 }));
     assert.ok(!isNewWord({ successCount: 1 }));
+  });
+});
+
+describe("recordQuizResult — preview (study) sub-cap", () => {
+  beforeEach(async () => {
+    await db.delete();
+    await db.open();
+  });
+
+  test("preview grants 1 pt to accumulatedToday", async () => {
+    const r = await recordQuizResult(60, PREVIEW_QUIZ_TYPE, true);
+    assert.equal(r.progress.accumulatedToday, 1);
+    assert.equal(r.progress.previewAccumulatedToday, 1);
+    assert.equal(r.progress.points, 0, "points only grow on stage-up");
+    assert.equal(r.event, "progress");
+  });
+
+  test("preview does not bump successCount (study, not recall)", async () => {
+    const r = await recordQuizResult(61, PREVIEW_QUIZ_TYPE, true);
+    assert.equal(r.progress.successCount, 0);
+  });
+
+  test(`preview caps at ${PREVIEW_DAILY_CAP} per word per day`, async () => {
+    let r;
+    for (let i = 0; i < PREVIEW_DAILY_CAP; i++) {
+      r = await recordQuizResult(62, PREVIEW_QUIZ_TYPE, true);
+      assert.equal(r.event, "progress");
+    }
+    assert.equal(r.progress.previewAccumulatedToday, PREVIEW_DAILY_CAP);
+    assert.equal(r.progress.accumulatedToday, PREVIEW_DAILY_CAP);
+
+    r = await recordQuizResult(62, PREVIEW_QUIZ_TYPE, true);
+    assert.equal(r.event, "no-op-cap-reached");
+    assert.equal(r.progress.previewAccumulatedToday, PREVIEW_DAILY_CAP);
+    assert.equal(r.progress.accumulatedToday, PREVIEW_DAILY_CAP, "no further pts past preview cap");
+  });
+
+  test("preview cannot fully close the 20-pt cap alone — harder quiz still required", async () => {
+    for (let i = 0; i < PREVIEW_DAILY_CAP; i++) {
+      await recordQuizResult(63, PREVIEW_QUIZ_TYPE, true);
+    }
+    const mid = await db.progress.get(63);
+    assert.equal(mid.accumulatedToday, PREVIEW_DAILY_CAP);
+    assert.equal(mid.points, 0, "no stage-up from preview alone");
+
+    const r = await recordQuizResult(63, "type-in", true);
+    assert.equal(r.progress.accumulatedToday, DAILY_CAP);
+    assert.equal(r.progress.points, 20);
+    assert.equal(r.event, "stage-up");
+  });
+
+  test("reset-to-new zeroes previewAccumulatedToday", async () => {
+    await recordQuizResult(64, PREVIEW_QUIZ_TYPE, true);
+    await recordQuizResult(64, "en-to-l1", false);
+    await recordQuizResult(64, "en-to-l1", false);
+    const r = await recordQuizResult(64, "en-to-l1", false);
+    assert.equal(r.event, "reset-to-new");
+    assert.equal(r.progress.previewAccumulatedToday, 0);
+  });
+
+  test("createProgress initialises previewAccumulatedToday at 0", () => {
+    assert.equal(createProgress(1).previewAccumulatedToday, 0);
   });
 });
 

@@ -90,6 +90,9 @@ const STRINGS = {
       capReachedShort: "Лимит на сегодня",
       resetToNew: "Слово сброшено: 3 ошибки за день. Начнём сначала завтра.",
       resetToActive: "Мастерство потеряно: слово вернулось в активную фазу (стадия 4).",
+      previewCta: "Ознакомление",
+      previewCtaHint: "Посмотреть слова до квиза",
+      gotIt: "Понятно",
     },
     audio: {
       play: "Воспроизвести",
@@ -110,6 +113,7 @@ const STRINGS = {
       "type-in": "Напиши перевод",
       "cloze": "Допиши предложение",
       "audio-type-in": "Напиши услышанное",
+      "preview": "Ознакомление",
     },
     dictionary: {
       title: "Словарь",
@@ -323,6 +327,9 @@ const STRINGS = {
       capReachedShort: "Ліміт на сьогодні",
       resetToNew: "Слово скинуто: 3 помилки за день. Почнемо спочатку завтра.",
       resetToActive: "Майстерність втрачено: слово повернулось в активну фазу (стадія 4).",
+      previewCta: "Ознайомлення",
+      previewCtaHint: "Подивитися слова до квізу",
+      gotIt: "Зрозуміло",
     },
     audio: {
       play: "Воспроизвести",
@@ -343,6 +350,7 @@ const STRINGS = {
       "type-in": "Напиши переклад",
       "cloze": "Допиши речення",
       "audio-type-in": "Напиши почуте",
+      "preview": "Ознайомлення",
     },
     dictionary: {
       title: "Словник",
@@ -556,6 +564,9 @@ const STRINGS = {
       capReachedShort: "Daily cap reached",
       resetToNew: "Word reset: 3 wrong answers today. We'll start over tomorrow.",
       resetToActive: "Mastery lost: word moved back to active phase (stage 4).",
+      previewCta: "Study mode",
+      previewCtaHint: "Preview the words before quizzing",
+      gotIt: "Got it",
     },
     audio: {
       play: "Play audio",
@@ -576,6 +587,7 @@ const STRINGS = {
       "type-in": "Type the translation",
       "cloze": "Complete the sentence",
       "audio-type-in": "Type what you hear",
+      "preview": "Study mode",
     },
     dictionary: {
       title: "Dictionary",

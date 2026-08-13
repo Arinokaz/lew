@@ -194,7 +194,8 @@ The IDB schema has shipped through v1 → v2 (added SRS points-era indexes) → 
 | `pointsAtIntervalStart` | number | `0` | Snapshot of `points` taken on first touch each interval day. Floor during the active phase; `points` never decreases within an active interval. |
 | `accumulatedToday` | number | `0` | 0–20, SRS points earned **today (calendar day)** toward the active interval's daily cap. Stays at 20 after cap — word is "frozen" for the rest of the day; **not** reset by stage-up. |
 | `wrongToday` | number | `0` | Wrong-answer count in **today's calendar day** |
-| `lastTouchedDate` | string \| null | `null` | "YYYY-MM-DD"; calendar-day boundary for resetting `accumulatedToday`/`wrongToday` |
+| `previewAccumulatedToday` | number | `0` | 0–10, SRS points earned **today** via the `preview` (study) quiz type only. Sub-cap (`PREVIEW_DAILY_CAP = 10`) so the remaining 10 pts of the daily cap must come from real quizzes. Reset on day rollover and by `resetToNew`. Non-indexed field (no schema bump). |
+| `lastTouchedDate` | string \| null | `null` | "YYYY-MM-DD"; calendar-day boundary for resetting `accumulatedToday`/`wrongToday`/`previewAccumulatedToday` |
 | `nextReview` | number | `Date.now()` | Set at stage-up (or `resetToNew` = now). For active words: stays at stage-up time + `STAGE_UP_INTERVALS[N]` days; if the user fails to close the cap on the due day, the word **stays due** (`nextReview <= now`) and reappears in `/repeat` until the cap is reached. Never reset by day rollover alone. |
 | `lastReview` | number \| null | `null` | Timestamp of last answer |
 | `EF` | number | `2.5` | SM-2 easiness factor (active only when `points >= 100`) |
@@ -270,8 +271,9 @@ The active learning phase (0–100 pts) uses a **points accumulator** with a per
 | `en-to-l1`, `l1-to-en`, `audio-to-en`, `cloze-choice` | **5** (easy) |
 | `tile-l1-en`, `tile-audio-en` | **10** (medium) |
 | `type-in`, `cloze`, `audio-type-in` | **20** (hard) |
+| `preview` | **1** (study — no recall; sub-capped, see below) |
 
-`xpForQuizType(quizType, correct)` in `docs/src/services/quiz-factory.js` returns a separate gamification XP value (5/7/8/10 for correct, **1** for wrong). XP never touches `progress.points`.
+`xpForQuizType(quizType, correct)` in `docs/src/services/quiz-factory.js` returns a separate gamification XP value (5/7/8/10 for correct, **1** for wrong, **1** for `preview`). XP never touches `progress.points`.
 
 ### Daily cap & rules
 
@@ -282,6 +284,7 @@ The active learning phase (0–100 pts) uses a **points accumulator** with a per
 - **If the user doesn't reach the cap on the day the word becomes due:** `nextReview` stays at its stage-up timestamp (already in the past), so the word remains due and reappears in `/repeat` on every subsequent session until the user finally closes the cap. This is intentional: SM-2 only works if the user is forced to recall.
 - **Mastered word wrong (stage 5)** → drop to `points = 80` (stage 4, back to active), reset SM-2 fields to defaults, schedule `nextReview = +1 day`.
 - **First correct answer after reaching stage 5:** `applyMastered` is special-cased to skip SM-2 on this hit — it advances `repetition` 0→1 but **keeps the 60-day initial mastered interval**. Without this, SM-2 with `q=5, repetition=0` would set `interval=1`, throwing away the long-mastered reward. Subsequent correct answers go through normal `sm2()`.
+- **`preview` (study) sub-cap:** the `preview` quiz type grants `+1 pt` per view but is capped at `PREVIEW_DAILY_CAP = 10` pts per word per day (tracked in `previewAccumulatedToday`). The user **cannot fully close the 20-pt daily cap by previewing alone** — the remaining 10 pts must come from real quizzes, so stage-up still requires recall. Preview does not bump `successCount` (it is study, not recall) and is rendered by `<quiz-preview>` which always fires `{ correct: true, studied: true }`. In pages, `studied` answers skip `playCorrect`/`playWrong`/vibrate and are recorded as **neutral** reviews (`reviewed++`, `xp++`, but no `correct`/`wrong` bump → accuracy chart stays honest).
 
 ### Stage-up interval table (active phase)
 
@@ -385,7 +388,7 @@ On Dashboard load (`refreshStreakOnVisit` in `docs/src/services/streak.js`):
 
 ## 8. Quiz Types
 
-All 9 types are available at every stage; the user picks freely per session.
+Nine test types (rows 1–9) are available at every stage; the user picks freely per session. A tenth mode — `preview` — is a study step (no recall) that earns a small per-day sub-cap of SRS pts and is available only in `/learn` and `/repeat` (rendered as a wide "Ознакомление" CTA above the 3×3 selector grid).
 
 | # | Key | Stimulus → Response | Component | Difficulty | SRS Pts |
 |---|---|---|---|---|---|
@@ -398,6 +401,7 @@ All 9 types are available at every stage; the user picks freely per session.
 | 7 | `type-in` | L1 translation → EN word (typed) | `<quiz-input>` | hard | 20 |
 | 8 | `cloze` | Example with blank (typed) | `<quiz-cloze>` (input mode) | hard | 20 |
 | 9 | `audio-type-in` | 🔊 audio → EN word (typed) | `<quiz-input>` + audio | hard | 20 |
+| — | `preview` | Study card: word + type + level + phonetic + audio (US/UK) + translation + example, "Понятно" to advance | `<quiz-preview>` | study | 1 (sub-cap 10/day/word) |
 
 ### Component shared base
 

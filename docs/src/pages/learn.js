@@ -27,6 +27,7 @@ import "../components/quiz-choice.js";
 import "../components/quiz-letters.js";
 import "../components/quiz-input.js";
 import "../components/quiz-cloze.js";
+import "../components/quiz-preview.js";
 import "../components/progress-bar.js";
 import "../components/audio-player.js";
 import "../components/icon.js";
@@ -124,7 +125,7 @@ function showDebtWarning(outlet, pool, translationLang, dailyNorm, activeLevels,
 function showQuizSelector(outlet, pool, translationLang, dailyNorm, activeLevels, isActive) {
   outlet.innerHTML = `
     <div class="learn-page">
-      ${renderQuizSelector({ items: QUIZ_TYPES, poolSize: pool.length, prefix: "learn" })}
+      ${renderQuizSelector({ items: QUIZ_TYPES, poolSize: pool.length, prefix: "learn", withPreview: true })}
     </div>
   `;
   bindQuizSelector(outlet, (quizType) => {
@@ -240,7 +241,7 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
   const cardStartMs = Date.now();
   let speed = 0;
   let answering = false;
-  quizEl.setOnAnswer(async ({ correct, skipped }) => {
+  quizEl.setOnAnswer(async ({ correct, skipped, studied }) => {
     if (answering || !isActive()) return;
     answering = true;
     try {
@@ -265,7 +266,7 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
       const pts = correct ? pointsForQuizType(quizType) : 0;
       const stageUp = event === "stage-up" || event === "mastered";
       const elapsedSec = Math.max(1, Math.round((Date.now() - cardStartMs) / 1000));
-      if (correct) speed = Math.round((60 / elapsedSec) * 10) / 10;
+      if (correct && !studied) speed = Math.round((60 / elapsedSec) * 10) / 10;
       if (event === "no-op-cap-reached") {
         toast(i18n.t("quiz.capReached"), { kind: "info", duration: 4000 });
       } else if (event === "reset-to-new") {
@@ -281,18 +282,21 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
           xp,
           pointsEarned: pts,
           stageUp,
+          neutral: !!studied,
           audio: quizType.startsWith("audio-"),
           speed,
         });
       } catch (e) {
         console.error("[learn] recordReview", e);
       }
-      if (correct) {
-        playCorrect();
-        vibrate(8);
-      } else {
-        playWrong();
-        vibrate(100);
+      if (!studied) {
+        if (correct) {
+          playCorrect();
+          vibrate(8);
+        } else {
+          playWrong();
+          vibrate(100);
+        }
       }
       try {
         const newAchievements = await checkAndUnlockAchievements();
@@ -302,7 +306,7 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
       } catch (e) {
         console.error("[learn] checkAndUnlockAchievements", e);
       }
-      onResult({ wordId: word.id, correct, isNew: true, quizType, xp, event });
+      onResult({ wordId: word.id, correct, isNew: true, quizType, xp, event, studied: !!studied });
     } finally {
       answering = false;
     }
@@ -310,8 +314,9 @@ function drawQuiz(outlet, item, idx, total, card, quizType, onResult, isActive) 
 }
 
 function drawCompletion(outlet, answers, bonus, onRepeat) {
-  const correct = answers.filter((a) => a.correct && !a.skipped).length;
-  const total = answers.length;
+  const graded = answers.filter((a) => !a.studied);
+  const correct = graded.filter((a) => a.correct && !a.skipped).length;
+  const total = graded.length;
   const baseXp = answers.reduce((s, a) => s + (a.xp || 0), 0);
   const xp = baseXp + bonus;
   outlet.innerHTML = `

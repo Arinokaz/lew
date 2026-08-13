@@ -13,7 +13,9 @@ import {
   quizCloze,
   quizClozeChoice,
   quizTileL1En,
+  quizPreview,
   buildQuiz,
+  xpForQuizType,
   invalidateDistractorCache,
 } from "../docs/src/services/quiz-factory.js";
 import { pointsForQuizType } from "../docs/src/services/srs.js";
@@ -85,8 +87,9 @@ describe("pointsForQuizType (points-based rules)", () => {
 });
 
 describe("QUIZ_TYPES registry completeness", () => {
-  test("9 types registered", () => {
+  test("9 types registered (preview excluded from grid)", () => {
     assert.equal(QUIZ_TYPES.length, 9);
+    assert.ok(!QUIZ_TYPES.includes("preview"), "preview must not appear in the selector grid");
   });
   test("includes audio-type-in (new)", () => {
     assert.ok(QUIZ_TYPES.includes("audio-type-in"));
@@ -95,6 +98,9 @@ describe("QUIZ_TYPES registry completeness", () => {
     for (const t of QUIZ_TYPES) {
       assert.equal(typeof QUIZ_FACTORIES[t], "function", `Missing: ${t}`);
     }
+  });
+  test("preview registered in QUIZ_FACTORIES even though not in grid", () => {
+    assert.equal(typeof QUIZ_FACTORIES["preview"], "function");
   });
 });
 
@@ -211,5 +217,33 @@ describe("audio-type-in (new quiz)", () => {
     assert.equal(spec.tag, "quiz-input");
     assert.equal(spec.attrs.target, "river2");
     assert.ok(spec.attrs["audio-url"]);
+  });
+});
+
+describe("preview (study mode) quiz", () => {
+  test("quizPreview returns quiz-preview tag with serialized word + lang", async () => {
+    const word = makeWord({ id: 100, word: "river2" });
+    const spec = await quizPreview(word, "ua");
+    assert.equal(spec.tag, "quiz-preview");
+    assert.equal(spec.attrs.lang, "ua");
+    const parsed = JSON.parse(spec.attrs["word-data"]);
+    assert.equal(parsed.word, "river2");
+    assert.equal(parsed.translations.ua, "річка");
+  });
+
+  test("buildQuiz resolves preview", async () => {
+    const word = makeWord({ id: 100, word: "river2" });
+    const spec = await buildQuiz("preview", word, "ru");
+    assert.equal(spec.tag, "quiz-preview");
+    assert.ok(spec.attrs["word-data"]);
+  });
+
+  test("preview grants 1 SRS pt", () => {
+    assert.equal(pointsForQuizType("preview"), 1);
+  });
+
+  test("xpForQuizType gives 1 for preview", () => {
+    assert.equal(xpForQuizType("preview", true), 1);
+    assert.equal(xpForQuizType("preview", false), 1, "wrong xp floor still 1");
   });
 });

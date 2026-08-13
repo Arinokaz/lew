@@ -34,6 +34,7 @@ describe("smoke test — components and pages", () => {
     await import("../docs/src/components/quiz-letters.js");
     await import("../docs/src/components/quiz-input.js");
     await import("../docs/src/components/quiz-cloze.js");
+    await import("../docs/src/components/quiz-preview.js");
     await import("../docs/src/components/progress-bar.js");
     await import("../docs/src/components/streak-badge.js");
     await import("../docs/src/components/stat-tile.js");
@@ -49,6 +50,7 @@ describe("smoke test — components and pages", () => {
       "quiz-letters",
       "quiz-input",
       "quiz-cloze",
+      "quiz-preview",
       "progress-bar",
       "streak-badge",
       "stat-tile",
@@ -94,6 +96,43 @@ describe("smoke test — components and pages", () => {
     document.body.appendChild(q);
     const opts = q.querySelectorAll(".quiz__option");
     assert.equal(opts.length, 4);
+  });
+
+  test("quiz-preview renders headword, translation and got-it button", async () => {
+    const word = {
+      id: 1,
+      word: "river",
+      translations: { ru: "река", ua: "річка" },
+      type: "noun",
+      level: "A2",
+      audio: { us_mp3: "https://example.com/a.mp3", uk_mp3: "https://example.com/b.mp3" },
+      phonetics: { us: "/ˈrɪvər/", uk: "/ˈrɪvə/" },
+      examples: [{ en: "Cross the river.", ru: "Пересеки реку." }],
+    };
+    const q = document.createElement("quiz-preview");
+    q.setAttribute("word-data", JSON.stringify(word));
+    q.setAttribute("lang", "ru");
+    document.body.appendChild(q);
+    assert.ok(q.querySelector(".quiz-preview__headword"), "headword missing");
+    assert.ok(q.querySelector("audio-player"), "audio-player missing");
+    assert.ok(q.innerHTML.includes("река"), "translation missing");
+    assert.ok(q.innerHTML.includes("Cross the river."), "example missing");
+    const btn = q.querySelector('[data-action="next"]');
+    assert.ok(btn, "got-it button missing");
+  });
+
+  test("quiz-preview fires studied:true instantly on advance", async () => {
+    const word = { id: 2, word: "cat", translations: { ru: "кот" }, type: "noun", level: "A1", audio: {}, phonetics: {}, examples: [] };
+    const q = document.createElement("quiz-preview");
+    q.setAttribute("word-data", JSON.stringify(word));
+    q.setAttribute("lang", "ru");
+    document.body.appendChild(q);
+    let payload = null;
+    q.setOnAnswer((p) => { payload = p; });
+    q.querySelector('[data-action="next"]').click();
+    assert.ok(payload, "onAnswer should fire synchronously for studied");
+    assert.equal(payload.studied, true);
+    assert.equal(payload.correct, true);
   });
 
   test("router module loads", async () => {
